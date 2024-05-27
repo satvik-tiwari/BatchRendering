@@ -4,6 +4,7 @@ using namespace GLCore;
 using namespace GLCore::Utils;
 
 SandboxLayer::SandboxLayer()
+	: m_CameraController(16.0f / 9.0f)
 {
 }
 
