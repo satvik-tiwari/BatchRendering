@@ -1,4 +1,5 @@
 #include "SandboxLayer.h"
+#include "stb_image/stb_image.h"
 
 using namespace GLCore;
 using namespace GLCore::Utils;
@@ -10,6 +11,26 @@ SandboxLayer::SandboxLayer()
 
 SandboxLayer::~SandboxLayer()
 {
+}
+
+static GLuint LoadTexture(const std::string& path)
+{
+	int w, h, bits;
+
+	stbi_set_flip_vertically_on_load(1);
+	auto* pixels = stbi_load(path.c_str(), &w, &h, &bits, STBI_rgb);
+	GLuint textureID;
+	glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+	stbi_image_free(pixels);
+
+	return textureID;
 }
 
 void SandboxLayer::OnAttach()
@@ -30,17 +51,17 @@ void SandboxLayer::OnAttach()
 	
 
 	float vertices[] = {
-		-1.5f, -0.5f, 0.0f, 0.24f, 0.16f, 0.26f, 1.0f,
-		-0.5f, -0.5f, 0.0f,	0.4f, 0.26f, 0.46f, 1.0f,
-		-0.5f,  0.5f, 0.0f,	0.84f, 0.36f, 0.56f, 1.0f,
-		-1.5f,  0.5f, 0.0f,	0.94f, 0.46f, 0.76f, 1.0f,
+		-1.5f, -0.5f, 0.0f, 0.24f, 0.16f, 0.26f, 1.0f, 0.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f, 0.0f,	0.4f,  0.26f, 0.46f, 1.0f, 1.0f, 0.0f, 0.0f,
+		-0.5f,  0.5f, 0.0f,	0.84f, 0.36f, 0.56f, 1.0f, 1.0f, 1.0f, 0.0f,
+		-1.5f,  0.5f, 0.0f,	0.94f, 0.46f, 0.76f, 1.0f, 0.0f, 1.0f, 0.0f,
 
-		 0.5f, -0.5f, 0.0f,	0.1f, 0.23f, 0.1f, 1.0f,
-		 1.5f, -0.5f, 0.0f,	0.2f, 0.53f, 0.3f, 1.0f,
-		 1.5f,  0.5f, 0.0f,	0.6f, 0.73f, 0.5f, 1.0f,
-		 0.5f,  0.5f, 0.0f, 0.9f, 0.83f, 0.6f, 1.0f
+		 0.5f, -0.5f, 0.0f,	0.2f,  0.53f, 0.3f,  1.0f, 0.0f, 0.0f, 1.0f,
+		 1.5f, -0.5f, 0.0f,	0.6f,  0.73f, 0.5f,  1.0f, 1.0f, 0.0f, 1.0f,
+		 1.5f,  0.5f, 0.0f,	0.1f,  0.23f, 0.1f,  1.0f, 1.0f, 1.0f, 1.0f,
+		 0.5f,  0.5f, 0.0f, 0.9f,  0.83f, 0.6f,  1.0f, 0.0f, 1.0f, 1.0f
 	};
-
+ 
 	glCreateVertexArrays(1, &m_QuadVA);
 	glBindVertexArray(m_QuadVA);
 
@@ -49,13 +70,19 @@ void SandboxLayer::OnAttach()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	glEnableVertexArrayAttrib(m_QuadVB, 0); // 0 -> position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 7, 0);//first attrib position, second - number of 
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 10, 0);//first attrib position, second - number of 
 									//floats per postion, fourth - stride - size of 1 vertex, fifth offset of vertex pos 
 	
 	glEnableVertexArrayAttrib(m_QuadVB, 1); // 1 -> color
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 7, (const void*)12);//first attrib color, second - number of 
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (const void*)12);//first attrib color, second - number of 
 									//floats per vertex color, fourth - stride - size of 1 vertex, fifth offset of vertex color,
 							//since it starts after 3 floats of vertex positon, therefore, 3 x 4 = 12
+
+	glEnableVertexArrayAttrib(m_QuadVB, 2); //texture coordinates
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (const void*)28);
+	
+	glEnableVertexArrayAttrib(m_QuadVB, 3); //texture coordinates
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (const void*)36);
 
 	uint32_t indices[] = {
 		0, 1, 2, 2, 3, 0,
@@ -66,6 +93,8 @@ void SandboxLayer::OnAttach()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_QuadIB);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
+	m_Tex1 = LoadTexture("assets/textures/Autobot.png");
+	m_Tex2 = LoadTexture("assets/textures/Decepticon.png");
 }
 
 void SandboxLayer::OnDetach()
