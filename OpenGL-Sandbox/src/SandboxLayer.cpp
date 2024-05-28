@@ -27,7 +27,7 @@ void SandboxLayer::OnAttach()
 		"assets/shaders/test.glsl.frag"
 	);
 
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	
 
 	float vertices[] = {
 		-0.5f, -0.5f, 0.0f,
@@ -68,7 +68,20 @@ void SandboxLayer::OnEvent(Event& event)
 	// Events here
 
 	m_CameraController.OnEvent(event);
-	//events here;
+
+	EventDispatcher dispatcher(event);
+	dispatcher.Dispatch<MouseButtonPressedEvent>(
+		[&](MouseButtonPressedEvent& e)
+		{
+			m_SquareColor = m_SquareAlternateColor;
+	return false;
+		});
+	dispatcher.Dispatch<MouseButtonReleasedEvent>(
+		[&](MouseButtonReleasedEvent& e)
+		{
+			m_SquareColor = m_SquareBaseColor;
+	return false;
+		});
 }
 
 static void SetUniformMat4(uint32_t shader, const char* name, const glm::mat4& matrix)
@@ -83,14 +96,18 @@ void SandboxLayer::OnUpdate(Timestep ts)
 
 	m_CameraController.OnUpdate(ts);
 
-	//glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(m_Shader->GetRendererID());
 
 	auto vp = m_CameraController.GetCamera().GetViewProjectionMatrix();
 	SetUniformMat4(m_Shader->GetRendererID(), "u_ViewProj", vp);
-	SetUniformMat4(m_Shader->GetRendererID(), "u_Transform", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+
+	//int location = glGetUniformLocation(m_Shader->GetRendererID(), "u_ViewProj");
+	//glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m_CameraController.GetCamera().GetViewProjectionMatrix()));
+
+	//SetUniformMat4(m_Shader->GetRendererID(), "u_Transform", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
 	
 	glBindVertexArray(m_QuadVA);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
@@ -101,4 +118,10 @@ void SandboxLayer::OnUpdate(Timestep ts)
 void SandboxLayer::OnImGuiRender()
 {
 	// ImGui here
+
+	ImGui::Begin("Controls");
+	if (ImGui::ColorEdit4("Square Base Color", glm::value_ptr(m_SquareBaseColor)))
+		m_SquareColor = m_SquareBaseColor;
+	ImGui::ColorEdit4("Square Alternate Color", glm::value_ptr(m_SquareAlternateColor));
+	ImGui::End();
 }
