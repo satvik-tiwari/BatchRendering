@@ -30,15 +30,15 @@ void SandboxLayer::OnAttach()
 	
 
 	float vertices[] = {
-		-1.5f, -0.5f, 0.0f,
-		-0.5f, -0.5f, 0.0f,
-		-0.5f,  0.5f, 0.0f,
-		-1.5f,  0.5f, 0.0f,
+		-1.5f, -0.5f, 0.0f, 0.84f, 0.36f, 0.76f, 1.0f,
+		-0.5f, -0.5f, 0.0f,	0.84f, 0.36f, 0.76f, 1.0f,
+		-0.5f,  0.5f, 0.0f,	0.84f, 0.36f, 0.76f, 1.0f,
+		-1.5f,  0.5f, 0.0f,	0.84f, 0.36f, 0.76f, 1.0f,
 
-		 0.5f, -0.5f, 0.0f,
-		 1.5f, -0.5f, 0.0f,
-		 1.5f,  0.5f, 0.0f,
-		 0.5f,  0.5f, 0.0f
+		 0.5f, -0.5f, 0.0f,	0.2f, 0.73f, 0.3f, 1.0f,
+		 1.5f, -0.5f, 0.0f,	0.2f, 0.73f, 0.3f, 1.0f,
+		 1.5f,  0.5f, 0.0f,	0.2f, 0.73f, 0.3f, 1.0f,
+		 0.5f,  0.5f, 0.0f, 0.2f, 0.73f, 0.3f, 1.0f
 	};
 
 	glCreateVertexArrays(1, &m_QuadVA);
@@ -48,8 +48,14 @@ void SandboxLayer::OnAttach()
 	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVB);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glEnableVertexArrayAttrib(m_QuadVB, 0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+	glEnableVertexArrayAttrib(m_QuadVB, 0); // 0 -> position
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 7, 0);//first attrib position, second - number of 
+									//floats per postion, fourth - stride - size of 1 vertex, fifth offset of vertex pos 
+	
+	glEnableVertexArrayAttrib(m_QuadVB, 1); // 1 -> color
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 7, (const void*)12);//first attrib color, second - number of 
+									//floats per vertex color, fourth - stride - size of 1 vertex, fifth offset of vertex color,
+							//since it starts after 3 floats of vertex positon, therefore, 3 x 4 = 12
 
 	uint32_t indices[] = {
 		0, 1, 2, 2, 3, 0,
