@@ -4,6 +4,14 @@
 using namespace GLCore;
 using namespace GLCore::Utils;
 
+struct Vertex
+{
+	float Position[3];
+	float Color[4];
+	float TexCoords[2];
+	float TexID;
+};
+
 SandboxLayer::SandboxLayer()
 	: m_CameraController(16.0f / 9.0f)
 {
@@ -56,26 +64,6 @@ void SandboxLayer::OnAttach()
 	glUniform1iv(loc, 2, samplers);
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
-	struct Vertex
-	{
-		float Position[3];
-		float Color[4];
-		float TexCoords[2];
-		float TexID;
-	};
-
-	/*float vertices[] = {
-		-1.5f, -0.5f, 0.0f, 0.24f, 0.16f, 0.26f, 1.0f, 0.0f, 0.0f, 0.0f,
-		-0.5f, -0.5f, 0.0f,	0.4f,  0.26f, 0.46f, 1.0f, 1.0f, 0.0f, 0.0f,
-		-0.5f,  0.5f, 0.0f,	0.84f, 0.36f, 0.56f, 1.0f, 1.0f, 1.0f, 0.0f,
-		-1.5f,  0.5f, 0.0f,	0.94f, 0.46f, 0.76f, 1.0f, 0.0f, 1.0f, 0.0f,
-
-		 0.5f, -0.5f, 0.0f,	0.2f,  0.53f, 0.3f,  1.0f, 0.0f, 0.0f, 1.0f,
-		 1.5f, -0.5f, 0.0f,	0.6f,  0.73f, 0.5f,  1.0f, 1.0f, 0.0f, 1.0f,
-		 1.5f,  0.5f, 0.0f,	0.1f,  0.23f, 0.1f,  1.0f, 1.0f, 1.0f, 1.0f,
-		 0.5f,  0.5f, 0.0f, 0.9f,  0.83f, 0.6f,  1.0f, 0.0f, 1.0f, 1.0f
-	};*/
  
 	glCreateVertexArrays(1, &m_QuadVA);
 	glBindVertexArray(m_QuadVA);
@@ -134,9 +122,61 @@ static void SetUniformMat4(uint32_t shader, const char* name, const glm::mat4& m
 	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
+static std::array<Vertex, 4> CreateQuad(float x, float y, float textureID)
+{
+	float size = 1.0f;
+
+	Vertex v0 = { { x, y, 0.0f },
+				 { 0.24f, 0.16f, 0.26f, 1.0f },
+				 { 0.0f, 0.0f },
+				 textureID };
+
+	Vertex v1 = { { x + size, y, 0.0f },
+				  { 0.4f, 0.26f, 0.46f, 1.0f },
+				  { 1.0f, 0.0f },
+				  textureID };
+
+	Vertex v2 = { { x + size, y + size, 0.0f },
+				  { 0.84f, 0.36f, 0.56f, 1.0f },
+				  { 1.0f, 1.0f },
+				  textureID };
+
+	Vertex v3 = { { x, y + size, 0.0f },
+				  { 0.94f, 0.46f, 0.76f, 1.0f },
+				  { 0.0f, 1.0f },
+				  textureID };
+	
+	return { v0, v1, v2, v3 };
+
+}
+
 void SandboxLayer::OnUpdate(Timestep ts)
 {
 	// Render here
+
+	//dynamic buffer
+
+	/*float vertices[] = {
+		-1.5f, -0.5f, 0.0f, 0.24f, 0.16f, 0.26f, 1.0f, 0.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f, 0.0f,	0.4f,  0.26f, 0.46f, 1.0f, 1.0f, 0.0f, 0.0f,
+		-0.5f,  0.5f, 0.0f,	0.84f, 0.36f, 0.56f, 1.0f, 1.0f, 1.0f, 0.0f,
+		-1.5f,  0.5f, 0.0f,	0.94f, 0.46f, 0.76f, 1.0f, 0.0f, 1.0f, 0.0f,
+
+		 0.5f, -0.5f, 0.0f,	0.2f,  0.53f, 0.3f,  1.0f, 0.0f, 0.0f, 1.0f,
+		 1.5f, -0.5f, 0.0f,	0.6f,  0.73f, 0.5f,  1.0f, 1.0f, 0.0f, 1.0f,
+		 1.5f,  0.5f, 0.0f,	0.1f,  0.23f, 0.1f,  1.0f, 1.0f, 1.0f, 1.0f,
+		 0.5f,  0.5f, 0.0f, 0.9f,  0.83f, 0.6f,  1.0f, 0.0f, 1.0f, 1.0f
+	};*/
+
+	auto q0 = CreateQuad(m_QuadPosition[0], m_QuadPosition[1], 0.0f);
+	auto q1 = CreateQuad(0.5f, -0.5f, 1.0f);
+
+	Vertex vertices[8];  //8 vertices
+	memcpy(vertices, q0.data(), q0.size() * sizeof(Vertex)); // 4 vertex x size of Vertex
+	memcpy(vertices + q0.size(), q1.data(), q1.size() * sizeof(Vertex));
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+
 
 	m_CameraController.OnUpdate(ts);
 
@@ -162,4 +202,8 @@ void SandboxLayer::OnUpdate(Timestep ts)
 void SandboxLayer::OnImGuiRender()
 {
 	// ImGui here
+
+	ImGui::Begin("Controls");
+	ImGui::DragFloat2("Quad Position", m_QuadPosition, 0.1f);
+	ImGui::End();
 }
