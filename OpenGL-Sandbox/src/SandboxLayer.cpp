@@ -64,13 +64,17 @@ void SandboxLayer::OnAttach()
 	glUniform1iv(loc, 2, samplers);
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+	const size_t MaxQuadCount = 1000;
+	const size_t MaxVertexCount = MaxQuadCount * 4;
+	const size_t MaxIndexCount = MaxQuadCount * 6;
  
 	glCreateVertexArrays(1, &m_QuadVA);
 	glBindVertexArray(m_QuadVA);
 
 	glCreateBuffers(1, &m_QuadVB);
 	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVB);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * 1000, nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, MaxVertexCount * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 
 	glEnableVertexArrayAttrib(m_QuadVB, 0); // 0 -> position
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Position));//first attrib position, second - number of 
@@ -87,10 +91,25 @@ void SandboxLayer::OnAttach()
 	glEnableVertexArrayAttrib(m_QuadVB, 3); //texture coordinates
 	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexID));
 
-	uint32_t indices[] = {
+	/*uint32_t indices[] = {
 		0, 1, 2, 2, 3, 0,
 		4, 5, 6, 6, 7, 4
-	};
+	};*/
+
+	uint32_t indices[MaxIndexCount];
+	uint32_t offset = 0;
+	for (size_t i = 0; i < MaxIndexCount; i += 6)
+	{
+		indices[i]     = offset + 0;
+		indices[i + 1] = offset + 1;
+		indices[i + 2] = offset + 2;
+
+		indices[i + 3] = offset + 2;
+		indices[i + 4] = offset + 3;
+		indices[i + 5] = offset + 0;
+
+		offset += 4;
+ 	}
 
 	glCreateBuffers(1, &m_QuadIB);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_QuadIB);
@@ -150,6 +169,8 @@ static std::array<Vertex, 4> CreateQuad(float x, float y, float textureID)
 
 }
 
+static int count = 0;
+
 void SandboxLayer::OnUpdate(Timestep ts)
 {
 	// Render here
@@ -168,12 +189,19 @@ void SandboxLayer::OnUpdate(Timestep ts)
 		 0.5f,  0.5f, 0.0f, 0.9f,  0.83f, 0.6f,  1.0f, 0.0f, 1.0f, 1.0f
 	};*/
 
+	indices[] = {
+		0, 1, 2, 2, 3, 0,
+		4, 5, 6, 6, 7, 4
+	};
+
 	auto q0 = CreateQuad(m_QuadPosition[0], m_QuadPosition[1], 0.0f);
 	auto q1 = CreateQuad(0.5f, -0.5f, 1.0f);
 
 	Vertex vertices[8];  //8 vertices
 	memcpy(vertices, q0.data(), q0.size() * sizeof(Vertex)); // 4 vertex x size of Vertex
 	memcpy(vertices + q0.size(), q1.data(), q1.size() * sizeof(Vertex));
+
+	indices = 
 
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 
@@ -204,6 +232,6 @@ void SandboxLayer::OnImGuiRender()
 	// ImGui here
 
 	ImGui::Begin("Controls");
-	ImGui::DragFloat2("Quad Position", m_QuadPosition, 0.1f);
+	ImGui::DragFloat2("Quad Vertex Position", m_QuadPosition, 0.1f);
 	ImGui::End();
 }
