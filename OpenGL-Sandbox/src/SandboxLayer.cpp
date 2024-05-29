@@ -57,7 +57,15 @@ void SandboxLayer::OnAttach()
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
-	float vertices[] = {
+	struct Vertex
+	{
+		float Position[3];
+		float Color[4];
+		float TexCoords[2];
+		float TexID;
+	};
+
+	/*float vertices[] = {
 		-1.5f, -0.5f, 0.0f, 0.24f, 0.16f, 0.26f, 1.0f, 0.0f, 0.0f, 0.0f,
 		-0.5f, -0.5f, 0.0f,	0.4f,  0.26f, 0.46f, 1.0f, 1.0f, 0.0f, 0.0f,
 		-0.5f,  0.5f, 0.0f,	0.84f, 0.36f, 0.56f, 1.0f, 1.0f, 1.0f, 0.0f,
@@ -67,29 +75,29 @@ void SandboxLayer::OnAttach()
 		 1.5f, -0.5f, 0.0f,	0.6f,  0.73f, 0.5f,  1.0f, 1.0f, 0.0f, 1.0f,
 		 1.5f,  0.5f, 0.0f,	0.1f,  0.23f, 0.1f,  1.0f, 1.0f, 1.0f, 1.0f,
 		 0.5f,  0.5f, 0.0f, 0.9f,  0.83f, 0.6f,  1.0f, 0.0f, 1.0f, 1.0f
-	};
+	};*/
  
 	glCreateVertexArrays(1, &m_QuadVA);
 	glBindVertexArray(m_QuadVA);
 
 	glCreateBuffers(1, &m_QuadVB);
 	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVB);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * 1000, nullptr, GL_DYNAMIC_DRAW);
 
 	glEnableVertexArrayAttrib(m_QuadVB, 0); // 0 -> position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 10, 0);//first attrib position, second - number of 
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Position));//first attrib position, second - number of 
 									//floats per postion, fourth - stride - size of 1 vertex, fifth offset of vertex pos 
 	
 	glEnableVertexArrayAttrib(m_QuadVB, 1); // 1 -> color
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (const void*)12);//first attrib color, second - number of 
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Color));//first attrib color, second - number of 
 									//floats per vertex color, fourth - stride - size of 1 vertex, fifth offset of vertex color,
 							//since it starts after 3 floats of vertex positon, therefore, 3 x 4 = 12
 
 	glEnableVertexArrayAttrib(m_QuadVB, 2); //texture coordinates
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (const void*)28);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexCoords));
 	
 	glEnableVertexArrayAttrib(m_QuadVB, 3); //texture coordinates
-	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float) * 10, (const void*)36);
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexID));
 
 	uint32_t indices[] = {
 		0, 1, 2, 2, 3, 0,
@@ -132,7 +140,7 @@ void SandboxLayer::OnUpdate(Timestep ts)
 
 	m_CameraController.OnUpdate(ts);
 
-	//glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClear(GL_COLOR_BUFFER_BIT);
 
