@@ -7,6 +7,7 @@ using namespace GLCore::Utils;
 SandboxLayer::SandboxLayer()
 	: m_CameraController(16.0f / 9.0f)
 {
+
 }
 
 SandboxLayer::~SandboxLayer()
@@ -20,6 +21,7 @@ static GLuint LoadTexture(const std::string& path)
 	stbi_set_flip_vertically_on_load(1);
 	auto* pixels = stbi_load(path.c_str(), &w, &h, &bits, STBI_rgb);
 	GLuint textureID;
+
 	glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -39,7 +41,7 @@ void SandboxLayer::OnAttach()
 
 	// Init here
 
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -48,7 +50,12 @@ void SandboxLayer::OnAttach()
 		"assets/shaders/test.glsl.frag"
 	);
 
-	
+	glUseProgram(m_Shader->GetRendererID());
+	auto loc = glGetUniformLocation(m_Shader->GetRendererID(), "u_Textures");
+	int samplers[2] = { 0, 1 };   //ascending list from 0 to whatever your number of texture slots is
+	glUniform1iv(loc, 2, samplers);
+
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
 	float vertices[] = {
 		-1.5f, -0.5f, 0.0f, 0.24f, 0.16f, 0.26f, 1.0f, 0.0f, 0.0f, 0.0f,
@@ -93,8 +100,8 @@ void SandboxLayer::OnAttach()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_QuadIB);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	m_Tex1 = LoadTexture("assets/textures/Autobot.png");
-	m_Tex2 = LoadTexture("assets/textures/Decepticon.png");
+	m_Tex1 = LoadTexture("assets/textures/Gojo1.png");
+	m_Tex2 = LoadTexture("assets/textures/Jogo2.png");
 }
 
 void SandboxLayer::OnDetach()
@@ -125,22 +132,23 @@ void SandboxLayer::OnUpdate(Timestep ts)
 
 	m_CameraController.OnUpdate(ts);
 
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
+
 
 	glUseProgram(m_Shader->GetRendererID());
+    glBindTextureUnit(0, m_Tex1);
+	glBindTextureUnit(1, m_Tex2);
 
 	auto vp = m_CameraController.GetCamera().GetViewProjectionMatrix();
 	SetUniformMat4(m_Shader->GetRendererID(), "u_ViewProj", vp);
-
-	
-	
-	glBindVertexArray(m_QuadVA);
 	SetUniformMat4(m_Shader->GetRendererID(), "u_Transform", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+
+	glBindVertexArray(m_QuadVA);
+	
 	glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
 	
-
-
 }
 
 void SandboxLayer::OnImGuiRender()
