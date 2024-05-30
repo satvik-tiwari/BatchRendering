@@ -141,31 +141,35 @@ static void SetUniformMat4(uint32_t shader, const char* name, const glm::mat4& m
 	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
-static std::array<Vertex, 4> CreateQuad(float x, float y, float textureID)
+static Vertex* CreateQuad(Vertex* target, float x, float y, float textureID)
 {
 	float size = 1.0f;
 
-	Vertex v0 = { { x, y, 0.0f },
+	*target = { { x, y, 0.0f },
 				 { 0.24f, 0.16f, 0.26f, 1.0f },
 				 { 0.0f, 0.0f },
 				 textureID };
+	target++;
 
-	Vertex v1 = { { x + size, y, 0.0f },
+	*target = { { x + size, y, 0.0f },
 				  { 0.4f, 0.26f, 0.46f, 1.0f },
 				  { 1.0f, 0.0f },
 				  textureID };
+	target++;
 
-	Vertex v2 = { { x + size, y + size, 0.0f },
+	*target = { { x + size, y + size, 0.0f },
 				  { 0.84f, 0.36f, 0.56f, 1.0f },
 				  { 1.0f, 1.0f },
 				  textureID };
+	target++;
 
-	Vertex v3 = { { x, y + size, 0.0f },
+	*target = { { x, y + size, 0.0f },
 				  { 0.94f, 0.46f, 0.76f, 1.0f },
 				  { 0.0f, 1.0f },
 				  textureID };
+	target++;
 	
-	return { v0, v1, v2, v3 };
+	return target;
 
 }
 
@@ -189,21 +193,31 @@ void SandboxLayer::OnUpdate(Timestep ts)
 		 0.5f,  0.5f, 0.0f, 0.9f,  0.83f, 0.6f,  1.0f, 0.0f, 1.0f, 1.0f
 	};*/
 
-	indices[] = {
-		0, 1, 2, 2, 3, 0,
-		4, 5, 6, 6, 7, 4
-	};
 
-	auto q0 = CreateQuad(m_QuadPosition[0], m_QuadPosition[1], 0.0f);
-	auto q1 = CreateQuad(0.5f, -0.5f, 1.0f);
+	/*auto q0 = CreateQuad(m_QuadPosition[0], m_QuadPosition[1], 0.0f);
+	auto q1 = CreateQuad(0.5f, -0.5f, 1.0f);*/
 
-	Vertex vertices[8];  //8 vertices
-	memcpy(vertices, q0.data(), q0.size() * sizeof(Vertex)); // 4 vertex x size of Vertex
-	memcpy(vertices + q0.size(), q1.data(), q1.size() * sizeof(Vertex));
+	uint32_t indexCount = 0;
 
-	indices = 
+	std::array<Vertex, 1000> vertices;
+	Vertex* buffer = vertices.data();
+	for (int y = 0; y < 5; y++)
+	{
+		for (int x = 0; x < 5; x++)
+		{
+			buffer = CreateQuad(buffer, x, y, (x + y) % 2);
+			indexCount += 6;
+		}
+	}
 
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+	buffer = CreateQuad(buffer, m_QuadPosition[0], m_QuadPosition[1], 0.0f);
+	indexCount += 6;
+	
+	//Vertex vertices[8];  //8 vertices
+	//memcpy(vertices, q0.data(), q0.size() * sizeof(Vertex)); // 4 vertex x size of Vertex
+	//memcpy(vertices + q0.size(), q1.data(), q1.size() * sizeof(Vertex));
+
+	glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size(), vertices.data());
 
 
 	m_CameraController.OnUpdate(ts);
@@ -223,7 +237,7 @@ void SandboxLayer::OnUpdate(Timestep ts)
 
 	glBindVertexArray(m_QuadVA);
 	
-	glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
 	
 }
 
