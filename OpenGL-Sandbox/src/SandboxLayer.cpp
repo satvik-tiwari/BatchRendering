@@ -4,11 +4,22 @@
 using namespace GLCore;
 using namespace GLCore::Utils;
 
-struct Vertex
-{
-	float Position[3];
-	float Color[4];
-	float TexCoords[2];
+struct Vec2 {
+	float x, y;
+};
+
+struct Vec3 {
+	float x, y, z;
+};
+
+struct Vec4 {
+	float x, y, z, w;
+};
+
+struct Vertex {
+	Vec3 Position;
+	Vec4 Color;
+	Vec2 TexCoords;
 	float TexID;
 };
 
@@ -100,7 +111,7 @@ void SandboxLayer::OnAttach()
 	uint32_t offset = 0;
 	for (size_t i = 0; i < MaxIndexCount; i += 6)
 	{
-		indices[i]     = offset + 0;
+		indices[i + 0] = offset + 0;
 		indices[i + 1] = offset + 1;
 		indices[i + 2] = offset + 2;
 
@@ -115,8 +126,8 @@ void SandboxLayer::OnAttach()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_QuadIB);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	m_Tex1 = LoadTexture("assets/textures/Gojo1.png");
-	m_Tex2 = LoadTexture("assets/textures/Jogo2.png");
+	m_Tex1 = LoadTexture("assets/textures/Autobot.png");
+	m_Tex2 = LoadTexture("assets/textures/Decepticon.png");
 }
 
 void SandboxLayer::OnDetach()
@@ -145,28 +156,28 @@ static Vertex* CreateQuad(Vertex* target, float x, float y, float textureID)
 {
 	float size = 1.0f;
 
-	*target = { { x, y, 0.0f },
-				 { 0.24f, 0.16f, 0.26f, 1.0f },
-				 { 0.0f, 0.0f },
-				 textureID };
+	target->Position = { x, y, 0.0f };
+	target->Color = { 0.24f, 0.16f, 0.26f, 1.0f };
+	target->TexCoords = { 0.0f, 0.0f };
+	target->TexID = textureID;
 	target++;
 
-	*target = { { x + size, y, 0.0f },
-				  { 0.4f, 0.26f, 0.46f, 1.0f },
-				  { 1.0f, 0.0f },
-				  textureID };
+	target->Position = { x + size, y, 0.0f };
+	target->Color = { 0.4f, 0.26f, 0.46f, 1.0f };
+	target->TexCoords = { 1.0f, 0.0f };
+	target->TexID = textureID;
 	target++;
 
-	*target = { { x + size, y + size, 0.0f },
-				  { 0.84f, 0.36f, 0.56f, 1.0f },
-				  { 1.0f, 1.0f },
-				  textureID };
+	target->Position = { x + size, y + size, 0.0f };
+	target->Color = { 0.84f, 0.36f, 0.56f, 1.0f };
+	target->TexCoords = { 1.0f, 1.0f };
+	target->TexID = textureID;
 	target++;
 
-	*target = { { x, y + size, 0.0f },
-				  { 0.94f, 0.46f, 0.76f, 1.0f },
-				  { 0.0f, 1.0f },
-				  textureID };
+	target->Position = { x, y + size, 0.0f };
+	target->Color = { 0.94f, 0.46f, 0.76f, 1.0f };
+	target->TexCoords = { 0.0f, 1.0f };
+    target->TexID = textureID;
 	target++;
 	
 	return target;
@@ -212,11 +223,14 @@ void SandboxLayer::OnUpdate(Timestep ts)
 
 	buffer = CreateQuad(buffer, m_QuadPosition[0], m_QuadPosition[1], 0.0f);
 	indexCount += 6;
+
+	//std::cout << "Size : " << sizeof(buffer) / sizeof(Vertex) << std::endl;
 	
 	//Vertex vertices[8];  //8 vertices
 	//memcpy(vertices, q0.data(), q0.size() * sizeof(Vertex)); // 4 vertex x size of Vertex
 	//memcpy(vertices + q0.size(), q1.data(), q1.size() * sizeof(Vertex));
 
+	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVB);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size(), vertices.data());
 
 
