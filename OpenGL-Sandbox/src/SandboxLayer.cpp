@@ -38,7 +38,7 @@ static GLuint LoadTexture(const std::string& path)
 	int w, h, bits;
 
 	stbi_set_flip_vertically_on_load(1);
-	auto* pixels = stbi_load(path.c_str(), &w, &h, &bits, STBI_rgb);
+	auto* pixels = stbi_load(path.c_str(), &w, &h, &bits, 4);
 	GLuint textureID;
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
@@ -47,7 +47,7 @@ static GLuint LoadTexture(const std::string& path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	stbi_image_free(pixels);
 
@@ -126,8 +126,8 @@ void SandboxLayer::OnAttach()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_QuadIB);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	m_Tex1 = LoadTexture("assets/textures/Autobot.png");
-	m_Tex2 = LoadTexture("assets/textures/Decepticon.png");
+	m_Tex1 = LoadTexture("assets/textures/Gojo.png");
+	m_Tex2 = LoadTexture("assets/textures/Jogo2.png");
 }
 
 void SandboxLayer::OnDetach()
@@ -230,8 +230,9 @@ void SandboxLayer::OnUpdate(Timestep ts)
 	//memcpy(vertices, q0.data(), q0.size() * sizeof(Vertex)); // 4 vertex x size of Vertex
 	//memcpy(vertices + q0.size(), q1.data(), q1.size() * sizeof(Vertex));
 
+	//std::cout << "Size : " << vertices.size() << std::endl;
 	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVB);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size(), vertices.data());
+	glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), vertices.data());//size of vertex buffer that we are sending in bytes
 
 
 	m_CameraController.OnUpdate(ts);
