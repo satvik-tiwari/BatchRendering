@@ -80,11 +80,35 @@ void Renderer::Init()
 
 	glCreateBuffers(1, &s_Data.QuadIB);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_Data.QuadIB);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER)
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	// 1x1 white texture
+	// we can have textured and solid color texture, just multiply any color by white and it will do the job
+	glCreateTextures(GL_TEXTURE_2D, 1, &s_Data.WhiteTexture);
+	glBindTexture(GL_TEXTURE_2D, s_Data.WhiteTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	uint32_t color = 0xffffffff;
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &color);
+
+	s_Data.TextureSlots[0] = s_Data.WhiteTexture; //out of 32 texture slots, the first one we have reserved for white texture 
+	for (size_t i = 1; i < MaxTextures; i++)
+		s_Data.TextureSlots[i] = 0;
 
 }
 void Renderer::ShutDown()
 {
+	// Shutdown here
+	
+	glDeleteVertexArrays(1, &s_Data.QuadVA);
+	glDeleteBuffers(1, &s_Data.QuadVB);
+	glDeleteBuffers(1, &s_Data.QuadIB);
+	
+	glDeleteTextures(1, &s_Data.WhiteTexture);
+
+	delete[] s_Data.QuadBuffer;
 }
 
 void Renderer::BeginBatch()

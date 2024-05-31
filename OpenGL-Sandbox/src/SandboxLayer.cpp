@@ -1,5 +1,6 @@
 #include "SandboxLayer.h"
 #include "stb_image/stb_image.h"
+#include "Renderer.h"
 
 using namespace GLCore;
 using namespace GLCore::Utils;
@@ -71,7 +72,11 @@ void SandboxLayer::OnAttach()
 
 	glUseProgram(m_Shader->GetRendererID());
 	auto loc = glGetUniformLocation(m_Shader->GetRendererID(), "u_Textures");
-	int samplers[2] = { 0, 1 };   //ascending list from 0 to whatever your number of texture slots is
+	int samplers[32];   //ascending list from 0 to whatever your number of texture slots is
+	for (int i = 0; i < 32; i++)
+	{
+		samplers[i] = i;
+	}
 	glUniform1iv(loc, 2, samplers);
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -80,7 +85,10 @@ void SandboxLayer::OnAttach()
 	const size_t MaxVertexCount = MaxQuadCount * 4;
 	const size_t MaxIndexCount = MaxQuadCount * 6;
  */
-	glCreateVertexArrays(1, &m_QuadVA);
+
+	
+
+	/*glCreateVertexArrays(1, &m_QuadVA);
 	glBindVertexArray(m_QuadVA);
 
 	glCreateBuffers(1, &m_QuadVB);
@@ -102,10 +110,7 @@ void SandboxLayer::OnAttach()
 	glEnableVertexArrayAttrib(m_QuadVB, 3); //texture coordinates
 	glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexID));
 
-	/*uint32_t indices[] = {
-		0, 1, 2, 2, 3, 0,
-		4, 5, 6, 6, 7, 4
-	};*/
+	
 
 	uint32_t indices[MaxIndexCount];
 	uint32_t offset = 0;
@@ -125,6 +130,10 @@ void SandboxLayer::OnAttach()
 	glCreateBuffers(1, &m_QuadIB);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_QuadIB);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	*/
+
+	Renderer::Init();
 
 	m_Tex1 = LoadTexture("assets/textures/Gojo.png");
 	m_Tex2 = LoadTexture("assets/textures/Jogo2.png");
