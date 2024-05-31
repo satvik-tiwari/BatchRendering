@@ -76,10 +76,10 @@ void SandboxLayer::OnAttach()
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
-	const size_t MaxQuadCount = 1000;
+	/*const size_t MaxQuadCount = 1000;
 	const size_t MaxVertexCount = MaxQuadCount * 4;
 	const size_t MaxIndexCount = MaxQuadCount * 6;
- 
+ */
 	glCreateVertexArrays(1, &m_QuadVA);
 	glBindVertexArray(m_QuadVA);
 
@@ -253,7 +253,10 @@ void SandboxLayer::OnUpdate(Timestep ts)
 	glBindVertexArray(m_QuadVA);
 	
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
-	
+
+	/*GLint MaxTextureImageUnits;
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &MaxTextureImageUnits);   //to find number of texture slots	
+	std::cout << MaxTextureImageUnits << std::endl;*/
 }
 
 void SandboxLayer::OnImGuiRender()
