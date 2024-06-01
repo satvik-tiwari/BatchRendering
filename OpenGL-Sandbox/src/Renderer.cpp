@@ -84,6 +84,10 @@ void Renderer::Init()
 
 	// 1x1 white texture
 	// we can have textured and solid color texture, just multiply any color by white and it will do the job
+
+	// in the fragment shader, if you are rendering a texture quad, the color is set to 1.
+	// meaning u multiply texture sample with 1
+	// if you are using a color quad, then the tex is 1x1 white texture and that gets multiplies with desired color
 	glCreateTextures(GL_TEXTURE_2D, 1, &s_Data.WhiteTexture);
 	glBindTexture(GL_TEXTURE_2D, s_Data.WhiteTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -113,6 +117,7 @@ void Renderer::ShutDown()
 
 void Renderer::BeginBatch()
 {
+	s_Data.QuadBufferPtr = s_Data.QuadBuffer;
 }
 
 void Renderer::EndBatch()
@@ -125,17 +130,113 @@ void Renderer::Flush()
 
 void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 {
+	if (s_Data.IndexCount >= MaxIndexCount)
+	{
+		//if we have exhausted the buffer ie.,we have run out of vertex buffer
+		//then, we end the batch, flush(render) everything we have 
+		//and start a new batch
+		EndBatch();  
+		Flush();
+		BeginBatch();
+	}
+
+	float textureIndex = 0.0f;
+
+	s_Data.QuadBufferPtr->Position = { position.x, position.y, 0.0f };
+	s_Data.QuadBufferPtr->Color = color;
+	s_Data.QuadBufferPtr->TexCoords = { 0.0f, 0.0f };
+	s_Data.QuadBufferPtr->TexIndex = textureIndex;
+	s_Data.QuadBufferPtr++;
+	
+	s_Data.QuadBufferPtr->Position = { position.x + size, position.y, 0.0f };
+	s_Data.QuadBufferPtr->Color = color;
+	s_Data.QuadBufferPtr->TexCoords = { 1.0f, 0.0f };
+	s_Data.QuadBufferPtr->TexIndex = textureIndex;
+	s_Data.QuadBufferPtr++;
+	
+	s_Data.QuadBufferPtr->Position = { position.x + size, position.y + size, 0.0f };
+	s_Data.QuadBufferPtr->Color = color;
+	s_Data.QuadBufferPtr->TexCoords = { 1.0f, 1.0f };
+	s_Data.QuadBufferPtr->TexIndex = textureIndex;
+	s_Data.QuadBufferPtr++;
+	
+	s_Data.QuadBufferPtr->Position = { position.x, position.y + size, 0.0f };
+	s_Data.QuadBufferPtr->Color = color;
+	s_Data.QuadBufferPtr->TexCoords = { 0.0f, 1.0f };
+	s_Data.QuadBufferPtr->TexIndex = textureIndex;
+	s_Data.QuadBufferPtr++;
+
+	s_Data.IndexCount += 6;
+	s_Data.RendererStats.QuadCount++;
 }
 
 void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, uint32_t textureID)
 {
+	if (s_Data.IndexCount >= MaxIndexCount || s_Data.TextureSlotIndex > 31) // 31 because first slot we have reserved for 1x1 white texture
+	{
+		//if we have exhausted the buffer ie.,we have run out of vertex buffer
+		// OR if we are out of texture slots ie, we are trying to render more than 31 textures
+		//then, we end the batch, flush(render) everything we have 
+		//and start a new batch
+		EndBatch();
+		Flush();
+		BeginBatch();
+	}
+
+	constexpr glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	float textureIndex = 0.0f;
+	for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+	{
+		if (s_Data.TextureSlots[i] == textureID)
+		{
+			textureIndex = (float)i;
+			break;
+		}
+	}
+
+	if (textureIndex == 0.0f)
+	{
+		textureIndex = (float)s_Data.TextureSlotIndex;
+		s_Data.TextureSlots[s_Data.TextureSlotIndex] = textureID;
+		s_Data.TextureSlotIndex++;
+	}
+
+	s_Data.QuadBufferPtr->Position = { position.x, position.y, 0.0f };
+	s_Data.QuadBufferPtr->Color = color;
+	s_Data.QuadBufferPtr->TexCoords = { 0.0f, 0.0f };
+	s_Data.QuadBufferPtr->TexIndex = textureIndex;
+	s_Data.QuadBufferPtr++;
+
+	s_Data.QuadBufferPtr->Position = { position.x + size, position.y, 0.0f };
+	s_Data.QuadBufferPtr->Color = color;
+	s_Data.QuadBufferPtr->TexCoords = { 1.0f, 0.0f };
+	s_Data.QuadBufferPtr->TexIndex = textureIndex;
+	s_Data.QuadBufferPtr++;
+
+	s_Data.QuadBufferPtr->Position = { position.x + size, position.y + size, 0.0f };
+	s_Data.QuadBufferPtr->Color = color;
+	s_Data.QuadBufferPtr->TexCoords = { 1.0f, 1.0f };
+	s_Data.QuadBufferPtr->TexIndex = textureIndex;
+	s_Data.QuadBufferPtr++;
+
+	s_Data.QuadBufferPtr->Position = { position.x, position.y + size, 0.0f };
+	s_Data.QuadBufferPtr->Color = color;
+	s_Data.QuadBufferPtr->TexCoords = { 0.0f, 1.0f };
+	s_Data.QuadBufferPtr->TexIndex = textureIndex;
+	s_Data.QuadBufferPtr++;
+
+	s_Data.IndexCount += 6;
+	s_Data.RendererStats.QuadCount++;
 }
 
 const Renderer::Stats& Renderer::GetStats()
 {
 	// TODO: insert return statement here
+
+	return s_Data.RendererStats;
 }
 
 void Renderer::ResetStats()
 {
+	memset(&s_Data.RendererStats, 0, sizeof(Stats));
 }

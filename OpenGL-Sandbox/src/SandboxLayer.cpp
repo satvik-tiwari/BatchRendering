@@ -5,6 +5,7 @@
 using namespace GLCore;
 using namespace GLCore::Utils;
 
+/*
 struct Vec2 {
 	float x, y;
 };
@@ -22,7 +23,7 @@ struct Vertex {
 	Vec4 Color;
 	Vec2 TexCoords;
 	float TexID;
-};
+};*/
 
 SandboxLayer::SandboxLayer()
 	: m_CameraController(16.0f / 9.0f)
@@ -77,7 +78,7 @@ void SandboxLayer::OnAttach()
 	{
 		samplers[i] = i;
 	}
-	glUniform1iv(loc, 2, samplers);
+	glUniform1iv(loc, 32, samplers);
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
@@ -142,10 +143,7 @@ void SandboxLayer::OnAttach()
 void SandboxLayer::OnDetach()
 {
 	// Shutdown here
-
-	glDeleteVertexArrays(1, &m_QuadVA);
-	glDeleteBuffers(1, &m_QuadVB);
-	glDeleteBuffers(1, &m_QuadIB);
+	Renderer::ShutDown();
 }
 
 void SandboxLayer::OnEvent(Event& event)
@@ -153,6 +151,12 @@ void SandboxLayer::OnEvent(Event& event)
 	// Events here
 
 	m_CameraController.OnEvent(event);
+
+	if (event.GetEventType() == EventType::WindowResize)
+	{
+		WindowResizeEvent& e = (WindowResizeEvent&)event;
+		glViewport(0, 0, e.GetWidth(), e.GetHeight());
+	}
 }
 
 static void SetUniformMat4(uint32_t shader, const char* name, const glm::mat4& matrix)
@@ -216,7 +220,8 @@ void SandboxLayer::OnUpdate(Timestep ts)
 
 	/*auto q0 = CreateQuad(m_QuadPosition[0], m_QuadPosition[1], 0.0f);
 	auto q1 = CreateQuad(0.5f, -0.5f, 1.0f);*/
-
+    
+	/*
 	uint32_t indexCount = 0;
 
 	std::array<Vertex, 1000> vertices;
@@ -242,16 +247,37 @@ void SandboxLayer::OnUpdate(Timestep ts)
 	//std::cout << "Size : " << vertices.size() << std::endl;
 	glBindBuffer(GL_ARRAY_BUFFER, m_QuadVB);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), vertices.data());//size of vertex buffer that we are sending in bytes
-
+	*/
 
 	m_CameraController.OnUpdate(ts);
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-
 	glUseProgram(m_Shader->GetRendererID());
+
+	Renderer::ResetStats();
+	Renderer::BeginBatch();
+
+	for (float y = -10.0f; y < 10.0f; y += 0.25)
+	{
+		for (float x = -10.0f; x < 10.0f; x += 0.25)
+		{
+			glm::vec4 color = { (x + 10) / 20.0f, 0.2f, (y + 10) / 20.0f, 1.0f };
+			Renderer::DrawQuad({ x, y }, { 0.20f, 0.20f }, color);
+		}
+	}
+
+	for (int y = 0; y < 5; y++)
+	{
+		for (int x = 0; x < 5; x++)
+		{
+			GLuint tex = (x + y) % 2 == 0 ? m_Tex1 : m_Tex2;
+			Renderer::DrawQuad({ x, y }, { 1.0f, 1.0f }, tex);
+		}
+	}
+
+
     glBindTextureUnit(0, m_Tex1);
 	glBindTextureUnit(1, m_Tex2);
 
