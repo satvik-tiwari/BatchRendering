@@ -122,10 +122,14 @@ void Renderer::BeginBatch()
 
 void Renderer::EndBatch()
 {
+	GLsizeiptr size = (uint8_t*)s_Data.QuadBufferPtr - (uint8_t*)s_Data.QuadBuffer;
+	glBindBuffer(GL_ARRAY_BUFFER, s_Data.QuadVB);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, size, s_Data.QuadBuffer);
 }
 
 void Renderer::Flush()
 {
+
 }
 
 void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)

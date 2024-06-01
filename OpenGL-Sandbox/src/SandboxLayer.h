@@ -26,5 +26,5 @@ private:
 
 	GLuint m_Tex1, m_Tex2;
 
-	float m_QuadPosition[2] = { -1.5f, -0.5f };
+	glm::vec2 m_QuadPosition = { -1.5f, -0.5f };
 };

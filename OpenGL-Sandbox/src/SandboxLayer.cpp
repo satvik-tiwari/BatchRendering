@@ -165,6 +165,7 @@ static void SetUniformMat4(uint32_t shader, const char* name, const glm::mat4& m
 	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
+/*
 static Vertex* CreateQuad(Vertex* target, float x, float y, float textureID)
 {
 	float size = 1.0f;
@@ -196,6 +197,7 @@ static Vertex* CreateQuad(Vertex* target, float x, float y, float textureID)
 	return target;
 
 }
+*/
 
 static int count = 0;
 
@@ -256,6 +258,10 @@ void SandboxLayer::OnUpdate(Timestep ts)
 
 	glUseProgram(m_Shader->GetRendererID());
 
+	auto vp = m_CameraController.GetCamera().GetViewProjectionMatrix();
+	SetUniformMat4(m_Shader->GetRendererID(), "u_ViewProj", vp);
+	SetUniformMat4(m_Shader->GetRendererID(), "u_Transform", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+
 	Renderer::ResetStats();
 	Renderer::BeginBatch();
 
@@ -277,17 +283,19 @@ void SandboxLayer::OnUpdate(Timestep ts)
 		}
 	}
 
+	Renderer::DrawQuad(m_QuadPosition, { 1.0f, 1.0f }, m_Tex1);
+	Renderer::EndBatch();
 
-    glBindTextureUnit(0, m_Tex1);
-	glBindTextureUnit(1, m_Tex2);
+    /*glBindTextureUnit(0, m_Tex1);
+	glBindTextureUnit(1, m_Tex2);*/
 
-	auto vp = m_CameraController.GetCamera().GetViewProjectionMatrix();
-	SetUniformMat4(m_Shader->GetRendererID(), "u_ViewProj", vp);
-	SetUniformMat4(m_Shader->GetRendererID(), "u_Transform", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
-
-	glBindVertexArray(m_QuadVA);
 	
-	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
+
+	Renderer::Flush();
+
+	//glBindVertexArray(m_QuadVA);
+	
+	//glDrawElements(GL_TRIANGLES, , GL_UNSIGNED_INT, nullptr);
 
 	/*GLint MaxTextureImageUnits;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &MaxTextureImageUnits);   //to find number of texture slots	
@@ -299,6 +307,6 @@ void SandboxLayer::OnImGuiRender()
 	// ImGui here
 
 	ImGui::Begin("Controls");
-	ImGui::DragFloat2("Quad Vertex Position", m_QuadPosition, 0.1f);
+	ImGui::DragFloat2("Quad Vertex Position", glm::value_ptr(m_QuadPosition), 0.1f);
 	ImGui::End();
 }
