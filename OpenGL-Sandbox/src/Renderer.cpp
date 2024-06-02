@@ -49,7 +49,7 @@ void Renderer::Init()
 
 	glCreateBuffers(1, &s_Data.QuadVB);
 	glBindBuffer(GL_ARRAY_BUFFER, s_Data.QuadVB);
-	glBufferData(GL_ARRAY_BUFFER, MaxVertexCount, nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, MaxVertexCount * sizeof(Vertex), nullptr, GL_DYNAMIC_DRAW);
 
 	glEnableVertexArrayAttrib(s_Data.QuadVA, 0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, Position));
@@ -122,6 +122,7 @@ void Renderer::BeginBatch()
 
 void Renderer::EndBatch()
 {
+	std::cout << "s_Data.QuadBufferPtr : " << s_Data.QuadBufferPtr << "\n(uint8_t*)s_Data.QuadBufferPtr : " << (uint8_t*)s_Data.QuadBufferPtr << std::endl;
 	GLsizeiptr size = (uint8_t*)s_Data.QuadBufferPtr - (uint8_t*)s_Data.QuadBuffer;
 	glBindBuffer(GL_ARRAY_BUFFER, s_Data.QuadVB);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, size, s_Data.QuadBuffer);
@@ -129,7 +130,15 @@ void Renderer::EndBatch()
 
 void Renderer::Flush()
 {
+	for (uint32_t i = 0; i < MaxTextures; i++)
+		glBindTextureUnit(i, s_Data.TextureSlots[i]);
 
+	glBindVertexArray(s_Data.QuadVA);
+	glDrawElements(GL_TRIANGLES, s_Data.IndexCount, GL_UNSIGNED_INT, nullptr);
+	s_Data.RendererStats.DrawCount++;
+
+	s_Data.IndexCount = 0;
+	s_Data.TextureSlotIndex = 1;
 }
 
 void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -186,8 +195,9 @@ void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, uint32
 		Flush();
 		BeginBatch();
 	}
-
-	constexpr glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	//const glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	/*constexpr glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f};
+	//GLM_CONSTEXPR glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	float textureIndex = 0.0f;
 	for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
 	{
@@ -230,7 +240,7 @@ void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, uint32
 	s_Data.QuadBufferPtr++;
 
 	s_Data.IndexCount += 6;
-	s_Data.RendererStats.QuadCount++;
+	s_Data.RendererStats.QuadCount++;*/
 }
 
 const Renderer::Stats& Renderer::GetStats()
