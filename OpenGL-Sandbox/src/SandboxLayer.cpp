@@ -308,6 +308,9 @@ void SandboxLayer::OnImGuiRender()
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	ImGui::Begin("Controls");
 	ImGui::DragFloat2("Quad Vertex Position", glm::value_ptr(m_QuadPosition), 0.1f);
-	ImGui::End();
+	ImGui::Text("Number of Quads : %d", Renderer::GetStats().QuadCount);
+	ImGui::Text("Number of Draw Calls : %d", Renderer::GetStats().DrawCount);
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+	ImGui::End();
+	
 }
