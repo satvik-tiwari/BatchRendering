@@ -269,7 +269,8 @@ void SandboxLayer::OnUpdate(Timestep ts)
 	{
 		for (float x = -10.0f; x < 10.0f; x += 0.25)
 		{
-			glm::vec4 color = { (x + 10) / 20.0f, 0.2f, (y + 10) / 20.0f, 1.0f };
+			//glm::vec4 color = { (x + 10) / 20.0f, 0.2f, (y + 10) / 20.0f, 1.0f };
+			glm::vec4 color = { 0.1f, 0.2f, (y + 10) / 20.0f, 1.0f };
 			Renderer::DrawQuad({ x, y }, { 0.20f, 0.20f }, color);
 		}
 	}
@@ -308,6 +309,9 @@ void SandboxLayer::OnImGuiRender()
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	ImGui::Begin("Controls");
 	ImGui::DragFloat2("Quad Vertex Position", glm::value_ptr(m_QuadPosition), 0.1f);
-	ImGui::End();
+	ImGui::Text("Number of Quads : %d", Renderer::GetStats().QuadCount);
+	ImGui::Text("Number of Draw Calls : %d", Renderer::GetStats().DrawCount);
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+	ImGui::End();
+	
 }

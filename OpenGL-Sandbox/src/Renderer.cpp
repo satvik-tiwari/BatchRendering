@@ -4,7 +4,7 @@
 #include <array>
 #include <Glad\glad.h>
 
-static const size_t MaxQuadCount = 1000;
+static const size_t MaxQuadCount = 7000;
 static const size_t MaxVertexCount = MaxQuadCount * 4;
 static const size_t MaxIndexCount = MaxQuadCount * 6;
 static const size_t MaxTextures = 32;
@@ -122,7 +122,7 @@ void Renderer::BeginBatch()
 
 void Renderer::EndBatch()
 {
-	std::cout << "s_Data.QuadBufferPtr : " << s_Data.QuadBufferPtr << "\n(uint8_t*)s_Data.QuadBufferPtr : " << (uint8_t*)s_Data.QuadBufferPtr << std::endl;
+	/*std::cout << "s_Data.QuadBufferPtr : " << s_Data.QuadBufferPtr << "\n(uint8_t*)s_Data.QuadBufferPtr : " << (uint8_t*)s_Data.QuadBufferPtr << std::endl;*/
 	GLsizeiptr size = (uint8_t*)s_Data.QuadBufferPtr - (uint8_t*)s_Data.QuadBuffer;
 	glBindBuffer(GL_ARRAY_BUFFER, s_Data.QuadVB);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, size, s_Data.QuadBuffer);
