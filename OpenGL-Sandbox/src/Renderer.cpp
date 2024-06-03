@@ -161,19 +161,19 @@ void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, const 
 	s_Data.QuadBufferPtr->TexIndex = textureIndex;
 	s_Data.QuadBufferPtr++;
 	
-	s_Data.QuadBufferPtr->Position = { position.x + size, position.y, 0.0f };
+	s_Data.QuadBufferPtr->Position = { position.x + size.x, position.y, 0.0f };
 	s_Data.QuadBufferPtr->Color = color;
 	s_Data.QuadBufferPtr->TexCoords = { 1.0f, 0.0f };
 	s_Data.QuadBufferPtr->TexIndex = textureIndex;
 	s_Data.QuadBufferPtr++;
 	
-	s_Data.QuadBufferPtr->Position = { position.x + size, position.y + size, 0.0f };
+	s_Data.QuadBufferPtr->Position = { position.x + size.x, position.y + size.y, 0.0f };
 	s_Data.QuadBufferPtr->Color = color;
 	s_Data.QuadBufferPtr->TexCoords = { 1.0f, 1.0f };
 	s_Data.QuadBufferPtr->TexIndex = textureIndex;
 	s_Data.QuadBufferPtr++;
 	
-	s_Data.QuadBufferPtr->Position = { position.x, position.y + size, 0.0f };
+	s_Data.QuadBufferPtr->Position = { position.x, position.y + size.y, 0.0f };
 	s_Data.QuadBufferPtr->Color = color;
 	s_Data.QuadBufferPtr->TexCoords = { 0.0f, 1.0f };
 	s_Data.QuadBufferPtr->TexIndex = textureIndex;
@@ -196,7 +196,7 @@ void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, uint32
 		BeginBatch();
 	}
 	//const glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	/*constexpr glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f};
+	constexpr glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f};
 	//GLM_CONSTEXPR glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	float textureIndex = 0.0f;
 	for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
@@ -221,26 +221,26 @@ void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, uint32
 	s_Data.QuadBufferPtr->TexIndex = textureIndex;
 	s_Data.QuadBufferPtr++;
 
-	s_Data.QuadBufferPtr->Position = { position.x + size, position.y, 0.0f };
+	s_Data.QuadBufferPtr->Position = { position.x + size.x, position.y, 0.0f };
 	s_Data.QuadBufferPtr->Color = color;
 	s_Data.QuadBufferPtr->TexCoords = { 1.0f, 0.0f };
 	s_Data.QuadBufferPtr->TexIndex = textureIndex;
 	s_Data.QuadBufferPtr++;
 
-	s_Data.QuadBufferPtr->Position = { position.x + size, position.y + size, 0.0f };
+	s_Data.QuadBufferPtr->Position = { position.x + size.x, position.y + size.y, 0.0f };
 	s_Data.QuadBufferPtr->Color = color;
 	s_Data.QuadBufferPtr->TexCoords = { 1.0f, 1.0f };
 	s_Data.QuadBufferPtr->TexIndex = textureIndex;
 	s_Data.QuadBufferPtr++;
 
-	s_Data.QuadBufferPtr->Position = { position.x, position.y + size, 0.0f };
+	s_Data.QuadBufferPtr->Position = { position.x, position.y + size.y, 0.0f };
 	s_Data.QuadBufferPtr->Color = color;
 	s_Data.QuadBufferPtr->TexCoords = { 0.0f, 1.0f };
 	s_Data.QuadBufferPtr->TexIndex = textureIndex;
 	s_Data.QuadBufferPtr++;
 
 	s_Data.IndexCount += 6;
-	s_Data.RendererStats.QuadCount++;*/
+	s_Data.RendererStats.QuadCount++;
 }
 
 const Renderer::Stats& Renderer::GetStats()
