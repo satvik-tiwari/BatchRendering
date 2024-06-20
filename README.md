@@ -12,4 +12,4 @@ git clone --recursive https://github.com/satvik-tiwari/BatchRendering.git
 Run `scripts/Win-Premake.bat` and open `OpenGL-Sandbox.sln` in Visual Studio 2019. `OpenGL-Sandbox/src/SandboxLayer.cpp` contains the example OpenGL Batch-Rendering code that's running.
 
 ## Acknowledgements
-The Cherno.
+This project has been creaetd by following the tutorials from The Cherno.
